@@ -1,11 +1,11 @@
 import numpy as np
-from main import *
+from Board import *
 
 class Game:
     """
-
+    Class for a playing a game of Minesweeper using a Board object
     """
-    board = ''
+    board = np.array([])
     gameState = np.array([])
     Over = False
     Score = 0
@@ -17,7 +17,7 @@ class Game:
 
     def askInput(self):
         try:
-            x,y = input('Enter coordinates for move: ').split()
+            x,y = input('Enter coordinates for move [x y]: ').split()
             x = int(x)
             y = int(y)
             self.move(x-1,y-1)
@@ -47,8 +47,44 @@ class Game:
 
     def score(self, x, y):
         count = 0;
-        adjacent_tiles = [self.board.layout[x-1][y+1], self.board.layout[x-1][y], self.board.layout[x-1][y-1], self.board.layout[x][y+1],
-             self.board.layout[x][y-1], self.board.layout[x+1][y+1], self.board.layout[x+1][y], self.board.layout[x+1][y-1]]
+        length = self.board.row()
+
+        if x == length - 1:
+            if y == 1:
+                adjacent_tiles = [self.board.layout[x-1][y], self.board.layout[x-1][y+1], self.board.layout[x][y + 1]]
+            elif y == length-1:
+                adjacent_tiles = [self.board.layout[x-1][y], self.board.layout[x-1][y-1], self.board.layout[x][y-1]]
+            else:
+                adjacent_tiles = [self.board.layout[x][y-1], self.board.layout[x-1][y-1], self.board.layout[x-1][y],
+                                  self.board.layout[x-1][y+1], self.board.layout[x][y+1]]
+        elif x == 1:
+            if y == 1:
+                adjacent_tiles = [self.board.layout[x][y+1], self.board.layout[x+1][y], self.board.layout[x+1][y+1]]
+            elif y == length - 1:
+                adjacent_tiles = [self.board.layout[x][y-1], self.board.layout[x+1][y-1], self.board.layout[x+1][y]]
+            else:
+                adjacent_tiles = [self.board.layout[x][y-1], self.board.layout[x+1][y-1], self.board.layout[x+1][y],
+                                  self.board.layout[x+1][y+1], self.board.layout[x][y+1]]
+        elif y == length - 1:
+            if x == length - 1:
+                adjacent_tiles = [self.board.layout[x][y-1], self.board.layout[x-1][y-1], self.board.layout[x-1][y]]
+            elif x == 1:
+                adjacent_tiles = [self.board.layout[x][y-1], self.board.layout[x+1][y-1], self.board.layout[x+1][y]]
+            else:
+                adjacent_tiles = [self.board.layout[x-1][y], self.board.layout[x-1][y-1], self.board.layout[x][y-1],
+                                  self.board.layout[x+1][y-1], self.board.layout[x+1][y]]
+        elif y == 1:
+            if x == length - 1:
+                adjacent_tiles = [self.board.layout[x-1][y], self.board.layout[x-1][y+1], self.board.layout[x][y+1]]
+            elif x == 1:
+                adjacent_tiles = [self.board.layout[x][y+1], self.board.layout[x+1][y+1], self.board.layout[x+1][y]]
+            else:
+                adjacent_tiles = [self.board.layout[x-1][y], self.board.layout[x-1][y+1], self.board.layout[x][y+1],
+                                  self.board.layout[x+1][y+1], self.board.layout[x+1][y]]
+        else:
+            adjacent_tiles = [self.board.layout[x - 1][y + 1], self.board.layout[x - 1][y], self.board.layout[x - 1][y - 1],
+                            self.board.layout[x][y + 1], self.board.layout[x][y - 1], self.board.layout[x + 1][y + 1],
+                            self.board.layout[x + 1][y], self.board.layout[x + 1][y - 1]]
 
         for tile in adjacent_tiles:
             if tile == -1:

@@ -20,7 +20,9 @@ class Board:
             self.board_length = length
             self.layout = np.array( [ [0 for i in range(0,self.board_length)] for j in range(0,self.board_length) ] )
 
-        self.fill_bombs(10)
+        bombRatio = ((self.board_length * self.board_length) / 2) - self.board_length
+        #print(bombRatio)
+        self.fill_bombs(bombRatio)
 
     def fill_bombs(self, numBombs):
         """
