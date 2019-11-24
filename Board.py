@@ -11,7 +11,7 @@ class Board:
     layout = np.array([])
     board_length = 0
 
-    def __init__(self, length=None):
+    def __init__(self, length=None, bomb_preset=None):
         if length != None:
             self.board_length = length
             self.layout = np.array( [[0 for i in range(0,self.board_length)] for j in range(0,self.board_length) ] )
@@ -22,9 +22,12 @@ class Board:
 
         bombRatio = ((self.board_length * self.board_length) / 2) - self.board_length
         #print(bombRatio)
-        self.fill_bombs(bombRatio)
+        if bomb_preset is None:
+            self.fill_bombs_random(bombRatio)
+        else:
+            self.fill_bombs_preset(bomb_preset)
 
-    def fill_bombs(self, numBombs):
+    def fill_bombs_random(self, numBombs):
         """
         Used to populate board with bombs, which are represented as -1
         :param board: Board object you wish to fill with bombs.
@@ -42,6 +45,11 @@ class Board:
                 bomb_count += 1
             else:
                 pass
+
+    def fill_bombs_preset(self, bomb_preset):
+        for x in bomb_preset:
+            for y in bomb_preset[x]:
+                self.layout[x][y] = bomb_preset[x][y]
 
     def display(self):
         """

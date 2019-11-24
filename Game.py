@@ -10,19 +10,27 @@ class Game:
     Over = False
     Score = 0
 
-    def __init__(self, board):
-        self.board = board
+    def __init__(self, length, bomb_preset=None, is_player_agent=False):
+        self.board = Board(length, bomb_preset)
         #self.board.display()
-        self.gameState = np.array( [[0 for i in range(0,self.board.row())] for j in range(0,self.board.col()) ] )
+        self.hidden_space = u"\u25A1"
+        self.gameState = np.array([[self.hidden_space for i in range(0, self.board.row())] for j in range(0, self.board.col())])
 
     def askInput(self):
         try:
             x,y = input('Enter coordinates for move [x y]: ').split()
             x = int(x)
             y = int(y)
-            self.move(x-1,y-1)
+            if x <= 0 or y <= 0:
+                print('Move is outside of play space')
+            else:
+                self.move(x-1,y-1)
         except ValueError:
-            x,y = input('Invalid coordinates, try again: ').split()
+            # x,y = input('Invalid coordinates, try again: ').split()
+            print('Invalid input for coordinates')
+        except IndexError:
+            # x,y = input('Move is outside of play space, try again: ').split()
+            print('Move is outside of play space')
 
     def move(self, x, y):
         if self.board.layout[x][y] == 0:
@@ -99,14 +107,14 @@ class Game:
             print("")
 
 def main():
-    b = Board(8)
-    game = Game(b)
+    game = Game(8)
     game.displayGameState()
     print('=======================================================')
     while(game.Over != True):
         game.askInput()
 
-    #game.displayGameState()
+    game.displayGameState()
 
 
-main()
+if __name__ == '__main__':
+    main()
