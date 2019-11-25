@@ -18,13 +18,13 @@ class Game:
 
     def askInput(self):
         try:
-            x,y = input('Enter coordinates for move [x y]: ').split()
+            x, y = input('Enter coordinates for move [x y]: ').split()
             x = int(x)
             y = int(y)
             if x <= 0 or y <= 0:
                 print('Move is outside of play space')
             else:
-                self.move(x-1,y-1)
+                self.move(x - 1, y - 1)
         except ValueError:
             # x,y = input('Invalid coordinates, try again: ').split()
             print('Invalid input for coordinates')
@@ -35,7 +35,7 @@ class Game:
     def move(self, x, y):
         if self.board.layout[x][y] == 0:
             print('Successful Move')
-            self.gameState[x][y] = self.score(x,y)
+            self.gameState[x][y] = self.score(x, y)
             self.displayGameState()
             print('=================================================================')
             #self.board.display()
@@ -54,41 +54,41 @@ class Game:
 
 
     def score(self, x, y):
-        count = 0;
+        count = 0
         length = self.board.row()
 
         if x == length - 1:
             if y == 0:
-                adjacent_tiles = [self.board.layout[x-1][y], self.board.layout[x-1][y+1], self.board.layout[x][y + 1]]
-            elif y == length-1:
-                adjacent_tiles = [self.board.layout[x-1][y], self.board.layout[x-1][y-1], self.board.layout[x][y-1]]
+                adjacent_tiles = [self.board.layout[x - 1][y], self.board.layout[x - 1][y + 1], self.board.layout[x][y + 1]]
+            elif y == length - 1:
+                adjacent_tiles = [self.board.layout[x - 1][y], self.board.layout[x - 1][y - 1], self.board.layout[x][y - 1]]
             else:
-                adjacent_tiles = [self.board.layout[x][y-1], self.board.layout[x-1][y-1], self.board.layout[x-1][y],
-                                  self.board.layout[x-1][y+1], self.board.layout[x][y+1]]
+                adjacent_tiles = [self.board.layout[x][y - 1], self.board.layout[x - 1][y - 1], self.board.layout[x - 1][y],
+                                  self.board.layout[x - 1][y + 1], self.board.layout[x][y + 1]]
         elif x == 0:
             if y == 0:
-                adjacent_tiles = [self.board.layout[x][y+1], self.board.layout[x+1][y], self.board.layout[x+1][y+1]]
+                adjacent_tiles = [self.board.layout[x][y + 1], self.board.layout[x + 1][y], self.board.layout[x + 1][y + 1]]
             elif y == length - 1:
-                adjacent_tiles = [self.board.layout[x][y-1], self.board.layout[x+1][y-1], self.board.layout[x+1][y]]
+                adjacent_tiles = [self.board.layout[x][y - 1], self.board.layout[x + 1][y - 1], self.board.layout[x + 1][y]]
             else:
-                adjacent_tiles = [self.board.layout[x][y-1], self.board.layout[x+1][y-1], self.board.layout[x+1][y],
-                                  self.board.layout[x+1][y+1], self.board.layout[x][y+1]]
+                adjacent_tiles = [self.board.layout[x][y - 1], self.board.layout[x + 1][y - 1], self.board.layout[x + 1][y],
+                                  self.board.layout[x + 1][y + 1], self.board.layout[x][y + 1]]
         elif y == length - 1:
             if x == length - 1:
-                adjacent_tiles = [self.board.layout[x][y-1], self.board.layout[x-1][y-1], self.board.layout[x-1][y]]
+                adjacent_tiles = [self.board.layout[x][y - 1], self.board.layout[x - 1][y - 1], self.board.layout[x - 1][y]]
             elif x == 1:
-                adjacent_tiles = [self.board.layout[x][y-1], self.board.layout[x+1][y-1], self.board.layout[x+1][y]]
+                adjacent_tiles = [self.board.layout[x][y - 1], self.board.layout[x + 1][y - 1], self.board.layout[x + 1][y]]
             else:
-                adjacent_tiles = [self.board.layout[x-1][y], self.board.layout[x-1][y-1], self.board.layout[x][y-1],
-                                  self.board.layout[x+1][y-1], self.board.layout[x+1][y]]
+                adjacent_tiles = [self.board.layout[x - 1][y], self.board.layout[x - 1][y - 1], self.board.layout[x][y - 1],
+                                  self.board.layout[x + 1][y - 1], self.board.layout[x + 1][y]]
         elif y == 0:
             if x == length - 1:
-                adjacent_tiles = [self.board.layout[x-1][y], self.board.layout[x-1][y+1], self.board.layout[x][y+1]]
+                adjacent_tiles = [self.board.layout[x - 1][y], self.board.layout[x - 1][y + 1], self.board.layout[x][y + 1]]
             elif x == 0:
-                adjacent_tiles = [self.board.layout[x][y+1], self.board.layout[x+1][y+1], self.board.layout[x+1][y]]
+                adjacent_tiles = [self.board.layout[x][y + 1], self.board.layout[x + 1][y + 1], self.board.layout[x + 1][y]]
             else:
-                adjacent_tiles = [self.board.layout[x-1][y], self.board.layout[x-1][y+1], self.board.layout[x][y+1],
-                                  self.board.layout[x+1][y+1], self.board.layout[x+1][y]]
+                adjacent_tiles = [self.board.layout[x - 1][y], self.board.layout[x - 1][y + 1], self.board.layout[x][y + 1],
+                                  self.board.layout[x + 1][y + 1], self.board.layout[x + 1][y]]
         else:
             adjacent_tiles = [self.board.layout[x - 1][y + 1], self.board.layout[x - 1][y], self.board.layout[x - 1][y - 1],
                             self.board.layout[x][y + 1], self.board.layout[x][y - 1], self.board.layout[x + 1][y + 1],
@@ -110,7 +110,7 @@ def main():
     game = Game(8)
     game.displayGameState()
     print('=======================================================')
-    while(game.Over != True):
+    while not game.Over:
         game.askInput()
 
     game.displayGameState()

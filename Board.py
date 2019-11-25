@@ -14,16 +14,19 @@ class Board:
     def __init__(self, length=None, bomb_preset=None):
         if length != None:
             self.board_length = length
-            self.layout = np.array( [[0 for i in range(0,self.board_length)] for j in range(0,self.board_length) ] )
+            self.layout = np.array([[0 for i in range(0, self.board_length)] for j in range(0, self.board_length)])
         else:
             length = randint(8, 26)
             self.board_length = length
-            self.layout = np.array( [ [0 for i in range(0,self.board_length)] for j in range(0,self.board_length) ] )
+            self.layout = np.array([[0 for i in range(0, self.board_length)] for j in range(0, self.board_length)])
 
-        bombRatio = ((self.board_length * self.board_length) / 2) - self.board_length
         #print(bombRatio)
         if bomb_preset is None:
+            bombRatio = ((self.board_length * self.board_length) / 2) - self.board_length
             self.fill_bombs_random(bombRatio)
+        elif bomb_preset == "easy":
+            bombs_easy = (self.board_length ** 2) // 8
+            self.fill_bombs_random(bombs_easy)
         else:
             self.fill_bombs_preset(bomb_preset)
 
@@ -56,13 +59,13 @@ class Board:
         Used to display the state of Board
         :param board: Board object you wish to display states of
         """
-        for row in range(0, self.board_length ):
+        for row in range(0, self.board_length):
             for col in range(0, self.board_length):
                 print("{:5}".format(self.layout[row][col]), end=" ")
             print("")
 
     def at(self, row, column):
-        return self.layout[row-1][column-1]
+        return self.layout[row - 1][column - 1]
 
     def row(self):
         return self.board_length
@@ -71,7 +74,7 @@ class Board:
         return self.board_length
 
 def main():
-    game_board = Board(length=8)
+    game_board = Board(length=8, bomb_preset='easy')
     game_board.display()
 
     print(game_board.layout.shape)
