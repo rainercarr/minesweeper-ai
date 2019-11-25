@@ -17,7 +17,7 @@ class Game:
 
     def askInput(self):
         try:
-            x,y = input('Enter coordinates for move [x y]: ').split()
+            x,y = input('Enter coordinates for move [x y command]: ').split()
             x = int(x)
             y = int(y)
             self.move(x-1,y-1)
