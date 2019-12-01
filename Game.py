@@ -2,6 +2,7 @@ import numpy as np
 from Board import *
 from AI import *
 from GamePresets import *
+from Metrics import *
 
 class Game:
     """
@@ -22,6 +23,7 @@ class Game:
         if is_player_agent:
             self.agent = AI(self.board.board_length)
         self.unrevealed_safe_locations = int(self.board.total_spaces - self.board.total_bombs)
+        self.metrics = Metrics()
 
     def askInput(self):
         try:
@@ -40,6 +42,7 @@ class Game:
             print('Move is outside of play space')
 
     def move(self, x, y):
+        self.metrics.record_move()
         if self.board.layout[x][y] == 0:
             print('Successful Move')
             self.gameState[x][y] = self.score(x, y)
@@ -49,6 +52,7 @@ class Game:
             self.check_if_game_won()
             #self.board.display()
         elif self.board.layout[x][y] == -1:
+
             print('BOOM!!')
             print('Game Over!!')
             print('=================================================================')
@@ -59,7 +63,7 @@ class Game:
     def agent_turn(self):
         # ask agent for move
         # update agent with what's see
-
+        self.metrics.record_move()
         self.agent.make_move(self)
 
     def agent_input(self, x, y):
@@ -150,6 +154,7 @@ class Game:
 
     def check_if_game_won(self):
         if self.unrevealed_safe_locations == 0:
+            self.metrics.outcome = "Win"
             print('You Won!')
             print('=================================================================')
             self.board.display()
@@ -166,7 +171,7 @@ class Game:
     @staticmethod
     def human_game():
         presets = GamePresets()
-        game = Game(8, None, False)
+        game = Game(8, "easy", False)
         # game = Game(presets.presets[0][0], presets.presets[0][1], False)
         game.displayGameState()
         print('=======================================================')
@@ -174,6 +179,7 @@ class Game:
             game.askInput()
 
         game.displayGameState()
+        game.metrics.end(log=True)
 
     @staticmethod
     def agent_game():
@@ -184,8 +190,9 @@ class Game:
         print('=======================================================')
         while not game.Over:
             game.agent_turn()
-
+        game.metrics.register_agent(game.agent)
         game.displayGameState()
+        game.metrics.end(log=True)
 
 
 
