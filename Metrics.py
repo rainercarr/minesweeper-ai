@@ -2,24 +2,6 @@ import time
 from decimal import *
 import platform
 import os
-#Metrics class
-
-#scoring
-#if we click a 0 with no adjacent zeros, that counts as a point
-
-#if we click a location that has anything else, that counts as a point
-'''
-TTD in Game class
-    place Metrics() constructor in proper method to start game
-    
-Scoring Gameplay
-    Human Player
-        Plays a certain square
-            If the square is adjacent to a known zero, score does not increase.
-            If the square is NOT adjacent to a known zero, score increases by one.
-    
-    Agent Player    
-'''
 
 class Metrics:
     def __init__(self):
@@ -68,9 +50,4 @@ class Metrics:
 
 if __name__ == '__main__':
     m = Metrics()
-    time.sleep(1)
-    print(m.elapsed_time())
-    m.record_move()
-
-    time.sleep(1)
-    m.end()
+    #other test code here if needed
