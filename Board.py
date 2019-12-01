@@ -10,6 +10,8 @@ class Board:
     """
     layout = np.array([])
     board_length = 0
+    total_spaces = 0
+    total_bombs = 0
 
     def __init__(self, length=None, bomb_preset=None):
         if length != None:
@@ -20,6 +22,7 @@ class Board:
             self.board_length = length
             self.layout = np.array([[0 for i in range(0, self.board_length)] for j in range(0, self.board_length)])
 
+        bombRatio = 0
         #print(bombRatio)
         if bomb_preset is None:
             bombRatio = ((self.board_length * self.board_length) / 2) - self.board_length
@@ -29,6 +32,10 @@ class Board:
             self.fill_bombs_random(bombs_easy)
         else:
             self.fill_bombs_preset(bomb_preset)
+
+        self.total_bombs = bombRatio
+        self.total_spaces = self.board_length ** 2
+
 
     def fill_bombs_random(self, numBombs):
         """
@@ -51,8 +58,8 @@ class Board:
 
     def fill_bombs_preset(self, bomb_preset):
         for x in bomb_preset:
-            for y in bomb_preset[x]:
-                self.layout[x][y] = bomb_preset[x][y]
+            for y in x:
+                self.layout[x][y] = y
 
     def display(self):
         """
@@ -72,6 +79,7 @@ class Board:
 
     def col(self):
         return self.board_length
+
 
 def main():
     game_board = Board(length=8, bomb_preset='easy')
