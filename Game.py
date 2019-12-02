@@ -14,10 +14,9 @@ class Game:
     Score = 0
     agent = None
     unrevealed_safe_locations = 0
-
+    visited = []
     def __init__(self, length, bomb_preset=None, is_player_agent=True):
         self.board = Board(length, bomb_preset)
-        #self.board.display()
         self.hidden_space = u"\u25A1"
         self.gameState = np.array([[self.hidden_space for i in range(0, self.board.row())] for j in range(0, self.board.col())])
         if is_player_agent:
@@ -35,24 +34,23 @@ class Game:
             else:
                 self.move(x - 1, y - 1)
         except ValueError:
-            # x,y = input('Invalid coordinates, try again: ').split()
             print('Invalid input for coordinates')
         except IndexError:
-            # x,y = input('Move is outside of play space, try again: ').split()
             print('Move is outside of play space')
 
     def move(self, x, y):
         self.metrics.record_move()
         if self.board.layout[x][y] == 0:
             print('Successful Move')
-            self.gameState[x][y] = self.score(x, y)
+            score_at_location = self.score(x, y)
+            self.gameState[x][y] = score_at_location
+            if score_at_location == 0:
+                self.reveal_near(x,y)
             self.displayGameState()
             print('=================================================================')
             self.unrevealed_safe_locations -= 1
             self.check_if_game_won()
-            #self.board.display()
         elif self.board.layout[x][y] == -1:
-
             print('BOOM!!')
             print('Game Over!!')
             print('=================================================================')
@@ -88,11 +86,15 @@ class Game:
             score_at_location = self.score(x, y)
             self.gameState[x][y] = score_at_location
             move_result = (score_at_location, "Move was successful")
+
+            # Unsure if this should be added here
+            if score_at_location == 0:
+                self.reveal_near(x,y)
+            # ==================================
             self.displayGameState()
             print('=================================================================')
             self.unrevealed_safe_locations -= 1
             self.check_if_game_won()
-            #self.board.display()
         elif self.board.layout[x][y] == -1:
             print('Game Over!!')
             print('=================================================================')
@@ -101,56 +103,59 @@ class Game:
             self.Over = True
         return move_result
 
+    #INCOMPLETE METHOD
     def flag(self, x, y):
-        self.board.layout == 777
-
-
+        pass
 
     def score(self, x, y):
-        count = 0
-        length = self.board.row()
+        '''
+        Counts bombs found in valid adjacent locations
+        '''
+        nearby_bombs = 0
+        notbomb_locations = []
+        bomb_locations = []
 
-        if x == length - 1:
-            if y == 0:
-                adjacent_tiles = [self.board.layout[x - 1][y], self.board.layout[x - 1][y + 1], self.board.layout[x][y + 1]]
-            elif y == length - 1:
-                adjacent_tiles = [self.board.layout[x - 1][y], self.board.layout[x - 1][y - 1], self.board.layout[x][y - 1]]
-            else:
-                adjacent_tiles = [self.board.layout[x][y - 1], self.board.layout[x - 1][y - 1], self.board.layout[x - 1][y],
-                                  self.board.layout[x - 1][y + 1], self.board.layout[x][y + 1]]
-        elif x == 0:
-            if y == 0:
-                adjacent_tiles = [self.board.layout[x][y + 1], self.board.layout[x + 1][y], self.board.layout[x + 1][y + 1]]
-            elif y == length - 1:
-                adjacent_tiles = [self.board.layout[x][y - 1], self.board.layout[x + 1][y - 1], self.board.layout[x + 1][y]]
-            else:
-                adjacent_tiles = [self.board.layout[x][y - 1], self.board.layout[x + 1][y - 1], self.board.layout[x + 1][y],
-                                  self.board.layout[x + 1][y + 1], self.board.layout[x][y + 1]]
-        elif y == length - 1:
-            if x == length - 1:
-                adjacent_tiles = [self.board.layout[x][y - 1], self.board.layout[x - 1][y - 1], self.board.layout[x - 1][y]]
-            elif x == 1:
-                adjacent_tiles = [self.board.layout[x][y - 1], self.board.layout[x + 1][y - 1], self.board.layout[x + 1][y]]
-            else:
-                adjacent_tiles = [self.board.layout[x - 1][y], self.board.layout[x - 1][y - 1], self.board.layout[x][y - 1],
-                                  self.board.layout[x + 1][y - 1], self.board.layout[x + 1][y]]
-        elif y == 0:
-            if x == length - 1:
-                adjacent_tiles = [self.board.layout[x - 1][y], self.board.layout[x - 1][y + 1], self.board.layout[x][y + 1]]
-            elif x == 0:
-                adjacent_tiles = [self.board.layout[x][y + 1], self.board.layout[x + 1][y + 1], self.board.layout[x + 1][y]]
-            else:
-                adjacent_tiles = [self.board.layout[x - 1][y], self.board.layout[x - 1][y + 1], self.board.layout[x][y + 1],
-                                  self.board.layout[x + 1][y + 1], self.board.layout[x + 1][y]]
-        else:
-            adjacent_tiles = [self.board.layout[x - 1][y + 1], self.board.layout[x - 1][y], self.board.layout[x - 1][y - 1],
-                            self.board.layout[x][y + 1], self.board.layout[x][y - 1], self.board.layout[x + 1][y + 1],
-                            self.board.layout[x + 1][y], self.board.layout[x + 1][y - 1]]
+        for (dx,dy) in [(0,1),(1,1),(1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1)]:
+            if self.inbounds(x+dx, y+dy):
+                if self.board.layout[x+dx][y+dy] == -1:
+                    nearby_bombs += 1
+                    bomb_locations.append((x+dx,y+dy))
+                else:
+                    notbomb_locations.append((x+dx,y+dy))
 
-        for tile in adjacent_tiles:
-            if tile == -1:
-                count +=1
-        return count
+        return nearby_bombs
+
+    def inbounds(self,x,y):
+        '''
+        Used by score method to check if adjacent locations are within the boards boundaries
+        '''
+        if x >= 0 and x < self.board.board_length and y >= 0 and y < self.board.board_length:
+            return True
+
+        return False
+
+    def reveal_near(self,x,y):
+        '''
+        recursive method that reveals scores of nearby squares, initially called when a 0 is scored
+        Base cases: if out of bounds, if already computed, if bomb, if is greater than 0
+        '''
+        if self.inbounds(x,y) == False:
+            return
+        if (x,y) in self.visited:
+            return
+        if self.board.layout[x][y] == -1:
+            return
+
+        self.visited.append((x, y))
+
+        s = self.score(x,y)
+        self.gameState[x][y] = s
+
+        if s > 0:
+            return
+
+        for (dx, dy) in [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]:
+            self.reveal_near(x+dx,y+dy)
 
     def check_if_game_won(self):
         if self.unrevealed_safe_locations == 0:
@@ -160,7 +165,6 @@ class Game:
             self.board.display()
             print('=================================================================')
             self.Over = True
-
 
     def displayGameState(self):
         for row in range(0, len(self.gameState[0]) ):
@@ -178,7 +182,7 @@ class Game:
         while not game.Over:
             game.askInput()
 
-        game.displayGameState()
+        #game.displayGameState()
         game.metrics.end(log=True)
 
     @staticmethod
@@ -194,9 +198,6 @@ class Game:
         game.displayGameState()
         game.metrics.end(log=True)
 
-
-
-
 def main():
     game_mode = input("A or P: ")
     if game_mode == "P":
@@ -206,3 +207,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
