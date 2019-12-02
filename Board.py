@@ -28,8 +28,8 @@ class Board:
             bombRatio = ((self.board_length * self.board_length) / 2) - self.board_length
             self.fill_bombs_random(bombRatio)
         elif bomb_preset == "easy":
-            bombs_easy = (self.board_length ** 2) // 8
-            self.fill_bombs_random(bombs_easy)
+            bombRatio = (self.board_length ** 2) // 8
+            self.fill_bombs_random(bombRatio)
         else:
             self.fill_bombs_preset(bomb_preset)
 

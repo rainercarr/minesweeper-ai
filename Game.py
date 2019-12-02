@@ -8,15 +8,11 @@ class Game:
     """
     Class for a playing a game of Minesweeper using a Board object
     """
-    board = np.array([])
-    gameState = np.array([])
-    Over = False
-    Score = 0
-    agent = None
-    unrevealed_safe_locations = 0
 
     def __init__(self, length, bomb_preset=None, is_player_agent=True):
+        self.Over = False
         self.board = Board(length, bomb_preset)
+        self.agent = None
         #self.board.display()
         self.hidden_space = u"\u25A1"
         self.gameState = np.array([[self.hidden_space for i in range(0, self.board.row())] for j in range(0, self.board.col())])
@@ -24,6 +20,7 @@ class Game:
             self.agent = AI(self.board.board_length)
         self.unrevealed_safe_locations = int(self.board.total_spaces - self.board.total_bombs)
         self.metrics = Metrics()
+        self.metrics.board_length = self.board.board_length
 
     def askInput(self):
         try:
@@ -32,19 +29,23 @@ class Game:
             y = int(y)
             if x <= 0 or y <= 0:
                 print('Move is outside of play space')
+                self.metrics.record_move()
             else:
                 self.move(x - 1, y - 1)
         except ValueError:
             # x,y = input('Invalid coordinates, try again: ').split()
             print('Invalid input for coordinates')
+            self.metrics.record_move()
         except IndexError:
             # x,y = input('Move is outside of play space, try again: ').split()
             print('Move is outside of play space')
+            self.metrics.record_move()
 
     def move(self, x, y):
         self.metrics.record_move()
         if self.board.layout[x][y] == 0:
             print('Successful Move')
+            self.metrics.record_successful_move()
             self.gameState[x][y] = self.score(x, y)
             self.displayGameState()
             print('=================================================================')
@@ -84,6 +85,7 @@ class Game:
             move_result = [-2, "Move already made"]
             return move_result
         elif self.board.layout[x][y] == 0:
+            self.metrics.record_successful_move()
             print('Successful Move')
             score_at_location = self.score(x, y)
             self.gameState[x][y] = score_at_location
@@ -91,6 +93,7 @@ class Game:
             self.displayGameState()
             print('=================================================================')
             self.unrevealed_safe_locations -= 1
+            print("Unrevealed safe locations: ", self.unrevealed_safe_locations)
             self.check_if_game_won()
             #self.board.display()
         elif self.board.layout[x][y] == -1:
