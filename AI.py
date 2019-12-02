@@ -32,8 +32,7 @@ class AI:
 
         self.next_move = self.choose_kb_move()
         if self.know_next_move is False:
-            self.next_move = self.make_uniformed_move()
-
+            self.next_move = self.make_uninformed_move()
         game.agent_input(self.next_move[0], self.next_move[1])
 
     def choose_kb_move(self):
@@ -45,7 +44,7 @@ class AI:
     def think_of_moves(self):
         self.kb.resolve_inferences()
 
-    def make_uniformed_move(self):
+    def make_uninformed_move(self):
         # If an uninformed move was made last turn and it resulted in leaving the play space,
         # then set the next uniformed move to be the start of the next row
         while self.next_move is None:
