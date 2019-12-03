@@ -90,11 +90,12 @@ class Game:
             score_at_location = self.score(x, y)
             self.gameState[x][y] = score_at_location
             move_result = (score_at_location, "Move was successful")
-
+            '''
             # Unsure if this should be added here
             if score_at_location == 0:
                 self.reveal_near(x,y)
             # ==================================
+            '''
             self.displayGameState()
             print('=================================================================')
             self.unrevealed_safe_locations -= 1
