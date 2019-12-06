@@ -30,6 +30,10 @@ class Board:
         elif bomb_preset == "easy":
             bombRatio = (self.board_length ** 2) // 8
             self.fill_bombs_random(bombRatio)
+        #Microsoft 90s minesweeper "easy" for 9x9 board
+        elif bomb_preset == "ms-easy":
+            bombRatio = 10
+            self.fill_bombs_random(bombRatio)
         else:
             self.fill_bombs_preset(bomb_preset)
 

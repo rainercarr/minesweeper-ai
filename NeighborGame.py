@@ -27,7 +27,7 @@ class NeighborGame(Game):
 
     @staticmethod
     def agent_game():
-        game = NeighborGame(9, "easy", True)
+        game = NeighborGame(9, "ms-easy", True)
         # game = Game(presets.presets[0][0], presets.presets[0][1], True)
         game.displayGameState()
         print('=======================================================')
