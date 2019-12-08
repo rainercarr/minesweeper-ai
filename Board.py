@@ -48,7 +48,7 @@ class Board:
         :param numBombs: Number of bombs to place on board.
         """
         bomb_count = 0
-        while (bomb_count != numBombs):
+        while (bomb_count < numBombs):
             # Uses randint to find a random coordinate
             x = randint(0, self.board_length - 1)
             y = randint(0, self.board_length - 1)

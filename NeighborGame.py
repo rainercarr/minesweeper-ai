@@ -27,7 +27,7 @@ class NeighborGame(Game):
 
     @staticmethod
     def agent_game():
-        game = NeighborGame(9, "ms-easy", True)
+        game = NeighborGame(9, None, True)
         # game = Game(presets.presets[0][0], presets.presets[0][1], True)
         game.displayGameState()
         print('=======================================================')
@@ -38,7 +38,7 @@ class NeighborGame(Game):
         game.metrics.end(log=True)
 
 def main():
-    for i in range(100):
+    for i in range(1000):
         NeighborGame.agent_game()
 
 if __name__ == '__main__':
