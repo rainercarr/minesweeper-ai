@@ -1,4 +1,4 @@
-from NeighborReasoningAI import *
+from ReasoningWithHeuristicAI import *
 from Game import *
 from Board import *
 from AI import *
@@ -12,7 +12,6 @@ class NeighborGame(Game):
         self.agent = NeighborReasoningAI(self.board.board_length)
 
     def score(self, x, y):
-        print("scoring attempted")
         count = 0
         length = self.board.row()
         adjacent_tiles = []
@@ -26,8 +25,8 @@ class NeighborGame(Game):
         return count
 
     @staticmethod
-    def agent_game():
-        game = NeighborGame(9, "ms-easy", True)
+    def agent_game(board_size, bombs):
+        game = NeighborGame(board_size, bomb_preset=bombs, is_player_agent=True)
         # game = Game(presets.presets[0][0], presets.presets[0][1], True)
         game.displayGameState()
         print('=======================================================')
@@ -38,8 +37,24 @@ class NeighborGame(Game):
         game.metrics.end(log=True)
 
 def main():
-    for i in range(100):
-        NeighborGame.agent_game()
+
+    for i in range(1000):
+        NeighborGame.agent_game(4, 2)
+        NeighborGame.agent_game(4, 4)
+        NeighborGame.agent_game(9, 10)
+        NeighborGame.agent_game(9, 32)
+        NeighborGame.agent_game(16, 32)
+
+
+
+    '''
+    for size in range(4, 17):
+        for bombs in range(size ** 2 // 8, size ** 2 // 2, 5):
+            for i in range(100):
+                #windows minesweeper easy: 9x9, 10 mines
+                #windows intermediate
+                NeighborGame.agent_game(size, bombs)
+    '''
 
 if __name__ == '__main__':
     main()

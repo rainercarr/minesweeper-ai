@@ -34,6 +34,13 @@ class Board:
         elif bomb_preset == "ms-easy":
             bombRatio = 10
             self.fill_bombs_random(bombRatio)
+        #we may also directly pass the number of bombs as the bomb preset
+        elif isinstance(bomb_preset, int):
+            bombRatio = bomb_preset
+            if bomb_preset < (self.board_length ** 2):
+                self.fill_bombs_random(bombRatio)
+            else:
+                raise Exception("Bomb number given exceeds board size - 1")
         else:
             self.fill_bombs_preset(bomb_preset)
 
@@ -83,7 +90,6 @@ class Board:
 
     def col(self):
         return self.board_length
-
 
 def main():
     game_board = Board(length=8, bomb_preset='easy')

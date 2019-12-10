@@ -19,8 +19,11 @@ class Game:
         if is_player_agent:
             self.agent = AI(self.board.board_length)
         self.unrevealed_safe_locations = int(self.board.total_spaces - self.board.total_bombs)
+
+        #initialize metrics
         self.metrics = Metrics()
         self.metrics.board_length = self.board.board_length
+        self.metrics.board_bombs = self.board.total_bombs
 
     def askInput(self):
         try:
