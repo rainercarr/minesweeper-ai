@@ -35,7 +35,8 @@ class NeighborReasoningAI():
     #return a board with the current heuristic value of all cells
     def min_heuristic(self):
         heuristic_board = np.array([[9 for i in range(self.board_length + 1)] for j in range(self.board_length + 1)], dtype='float16')
-
+        print("Score memory: ")
+        print(self.score_memory)
         for x in range(1, self.board_length + 1):
             for y in range(1, self.board_length + 1):
                 #check status of neighbors of square
@@ -47,6 +48,7 @@ class NeighborReasoningAI():
                             #record unknown neighbors
                             if (i, j) not in self.literal_kb:
                                 unknown_neighbors.append((i, j))
+                            #if neighbor listed as true in literal KB
                             elif self.literal_kb[(i, j)]:
                                 bomb_neighbors += 1
                 if len(unknown_neighbors) > 0 and self.score_memory[x][y] > 0:
@@ -58,8 +60,19 @@ class NeighborReasoningAI():
                             else:
                                 heuristic_board[neighbor[0]][neighbor[1]] += heuristic_value
         #once completely updated, get the tuple with coordinates of the lowest square and its value
-        min_heuristic_square = np.unravel_index(heuristic_board.argmin(), heuristic_board.shape)
-        min_heuristic_value = np.amin(heuristic_board)
+
+        min_heuristic_square = (1, 1)
+        min_heuristic_value = 9
+
+        for i in range(1, len(heuristic_board)):
+            for j in range(1, len(heuristic_board)):
+                if (i, j) not in self.visited:
+                    first_not_visited = (i, j)
+                if heuristic_board[i][j] < min_heuristic_value and (i, j) not in self.visited:
+                    min_heuristic_value = heuristic_board[i][j]
+                    min_heuristic_square = (i, j)
+        if min_heuristic_value == 9:
+            min_heuristic_square = first_not_visited
         print(heuristic_board)
         print("Min heuristic square: ", min_heuristic_square)
         print("Min heuristic value: ", min_heuristic_value)
@@ -79,9 +92,9 @@ class NeighborReasoningAI():
                 return literal
 
         # check the heuristics: if there is a place safer than the threshold, go there
-        threshold = 0.2
+        threshold = 0.14
         min_heuristic_square, min_heuristic_value = self.min_heuristic()
-        if min_heuristic_value < threshold:
+        if min_heuristic_value < threshold and min_heuristic_square not in self.visited:
             return min_heuristic_square
 
         # if no known-safe squares to visit, and the minimum heuristic is above the threshold,
@@ -94,23 +107,22 @@ class NeighborReasoningAI():
                     know_next_move = True
                     return literal
 
-        '''
-        if not know_next_move:
-            for i in range(1, self.board_length + 1):
-                for j in range(1, self.board_length + 1):
-                    literal = min_heuristic_square
-                    if (literal not in self.visited) and (literal in self.containing_clauses) and (literal not in self.literal_kb):
-                        return literal
-        '''
-
-        # if there are no completely unknown squares to reason about, the square with the minimum heuristic should
-        # roughly be the safest.
+        #lastly, if none of those hold true, go to the heuristic cell
         return min_heuristic_square
+
+        '''
+        for i in range(1, self.board_length + 1):
+            for j in range(1, self.board_length + 1):
+                if (literal not in self.visited) and (literal in self.containing_clauses) and (literal not in self.literal_kb):
+                    return literal
+        '''
 
     def set_last_seen_value(self, move_result):
         move_x = self.last_move[0]
         move_y = self.last_move[1]
         move_score = move_result[0]
+        print("Move score returned from Game:")
+        print(move_result[0])
         self.score_memory[move_x][move_y] = move_score
         self.add_to_kb(move_x, move_y, False)
         self.infer_from_score(move_x, move_y, move_score)
@@ -131,7 +143,7 @@ class NeighborReasoningAI():
         if truth_value:
             #record as a known bomb
             self.score_memory[x][y] = -1
-        else:
+        elif self.score_memory[x][y] == -2:
             #1 is the default estimate for an unknown square's score
             self.score_memory[x][y] = 1
 
@@ -192,6 +204,8 @@ class NeighborReasoningAI():
             compound_clause = [set(i) for i in compound_clause]
             return compound_clause
 
+        if n == -1:
+            return
         if n == 0:
             self.infer_from_zero(x, y)
         else:
@@ -214,7 +228,7 @@ class NeighborReasoningAI():
             print("Bomb neighbors: " + str(bomb_neighbors))
             #add all n-combinations of neighbors to the list
 
-            if len(bomb_neighbors) == 0:
+            if len(bomb_neighbors) == 0 and n > 0:
                 self.compound_clauses[literal] = create_combinations(unknown_neighbors, n)
                 # make sure containing_clauses refers to this compound clause for each unknown neighbor
                 self.add_to_containing_clauses(unknown_neighbors, literal)
@@ -222,19 +236,17 @@ class NeighborReasoningAI():
             #if there are bomb neighbors
             else:
                 non_bomb = n - len(bomb_neighbors)
-                if non_bomb < 0:
-                    raise Exception("Erroneous bomb neighbors being inferred, or score method broken")
                 #if the score of (x, y) is n, there are n bomb neighbors
                     #if n neighbors are known bombs, there is no change in the knowledge base
-                elif non_bomb >= 1:
+                if non_bomb >= 1:
                     compound_clause = create_combinations(unknown_neighbors, non_bomb)
                     for clause in compound_clause:
                         clause = clause.union(set(bomb_neighbors))
                     self.compound_clauses[literal] = compound_clause
                     # make sure containing_clauses refers to this compound clause for each unknown neighbor
                     self.add_to_containing_clauses(unknown_neighbors + bomb_neighbors, literal)
-
             #if there ends up being only one clause with n elements, all elements must logically be bombs
+
             if literal in self.compound_clauses:
                 if len(self.compound_clauses[literal]) == 1:
                     for clause in self.compound_clauses[literal]:
