@@ -25,13 +25,9 @@ You will need at least Python 3.7.5 including the standard libraries
     os
 
 
-and the latest version of:
+and
 
-    numpy
- 1.17.3 
+    numpy 1.17.3
+  
   ## Credits
   This project was created by Louis Rivera, Jorge Garcia, and Jonathan Carr for Prof. Rachel Trana's course, CS-335 Artificial Intelligence, at Northeastern Illinois University in Fall 2019.
-   
-    
-    
-    
