@@ -1,5 +1,3 @@
-#AI using forward-chaining
-
 import itertools
 
 
@@ -28,34 +26,50 @@ class NeighborReasoningAI():
         self.last_move = move
         game.agent_input(move[0], move[1])
 
-    def choose_move(self):
-        know_next_move = False
-        move = None
-
-        # if there are known-safe squares to visit
+    def known_safe_to_visit(self):
         for literal in self.literal_kb.keys():
             if (self.literal_kb[literal] is False) and (literal not in self.visited):
                 print("Next move: known-safe")
                 know_next_move = True
-                return literal
+                return True, literal
+        else:
+            return False, None
 
-        # if no known-safe squares to visit, but there are squares that have not been reasoned about to visit
-        if not know_next_move:
-            for i in range(1, self.board_length + 1):
-                for j in range(1, self.board_length + 1):
-                    literal = (i, j)
-                    if (literal not in self.visited) and (literal not in self.containing_clauses) and (literal not in self.literal_kb):
-                        print("Next move: not reasoned about")
-                        know_next_move = True
-                        return literal
+    def not_reasoned_about(self):
+        for i in range(1, self.board_length + 1):
+            for j in range(1, self.board_length + 1):
+                literal = (i, j)
+                if (literal not in self.visited) and (literal not in self.containing_clauses) and (
+                        literal not in self.literal_kb):
+                    return True, literal
+        else:
+            return False, None
 
-        # all squares visited or reasoned about: pick the first square not visited
-        if not know_next_move:
-            for i in range(1, self.board_length + 1):
-                for j in range(1, self.board_length + 1):
-                    literal = (i, j)
-                    if (literal not in self.visited) and (literal in self.containing_clauses) and (literal not in self.literal_kb):
-                        return literal
+    def next_not_visited(self):
+        for i in range(1, self.board_length + 1):
+            for j in range(1, self.board_length + 1):
+                literal = (i, j)
+                if (literal not in self.visited) and (literal in self.containing_clauses) and (
+                        literal not in self.literal_kb):
+                    return literal
+        else:
+            return None
+
+    def choose_move(self):
+        move = None
+        # if there are known-safe squares to visit
+        known_safe, literal = self.known_safe_to_visit()
+        if known_safe:
+            move = literal
+        # otherwise, if there are squares not reasoned about
+        else:
+            not_reasoned_about, literal = self.not_reasoned_about()
+            if not_reasoned_about:
+                move = literal
+            # lastly, try the first square not visited
+            else:
+                move = self.next_not_visited()
+        return move
 
     def set_last_seen_value(self, move_result):
         move_x = self.last_move[0]
@@ -63,12 +77,6 @@ class NeighborReasoningAI():
         move_score = move_result[0]
         self.add_to_kb(move_x, move_y, False)
         self.infer_from_score(move_x, move_y, move_score)
-        print("Literal KB: ")
-        print(self.literal_kb)
-        print("Compound clauses: ")
-        print(self.compound_clauses)
-        print("Containing clauses: ")
-        print(self.containing_clauses)
 
     def add_to_kb(self, x, y, truth_value):
         #add to list of literals
@@ -91,11 +99,13 @@ class NeighborReasoningAI():
                         #add clauses to the deletion list that contain it
                         if literal in clause:
                             deletion_list.append(clause)
+                #remove the clauses in the deletion list
                 for clause in deletion_list:
                     index_to_delete = self.compound_clauses[inference_from_square].index(clause)
                     del self.compound_clauses[inference_from_square][index_to_delete]
+
                 #if only one clause is left in the compound clause (one set of possible neighbors remaining to be bombs),
-                #it must be true--all must be bombs. add all literals to KB
+                #it must be true--all must be bombs. Add all literals to KB
                 if len(self.compound_clauses[inference_from_square]) == 1:
                     literals_to_add = []
                     for clause in self.compound_clauses[inference_from_square]:
@@ -109,8 +119,6 @@ class NeighborReasoningAI():
                     for i in range(num_literals_to_add):
                         l = literals_to_add.pop()
                         self.add_to_kb(l[0], l[1], True)
-
-            #may want to delete more entries from containing_clauses if inefficient
             if truth_value is False:
                 self.containing_clauses[literal] = {}
 
@@ -137,8 +145,6 @@ class NeighborReasoningAI():
         else:
         #Rule 1: there exists one n-combination of distinct neighbors of (x, y) that are bombs where n > 0
         #Rule 2: if any neighbor is a known bomb it must be included in all possible combinations
-
-        #check all neighbors
             for i in range(x - 1, x + 2):
                 for j in range(y - 1, y + 2):
                     if 0 < i <= self.board_length and 0 < j <= self.board_length:
@@ -150,11 +156,9 @@ class NeighborReasoningAI():
                             #neighbor not in literal KB
                             elif neighbor not in self.literal_kb:
                                 unknown_neighbors.append(neighbor)
-            print("Unknown neighbors: " + str(unknown_neighbors))
-            print("Bomb neighbors: " + str(bomb_neighbors))
             #add all n-combinations of neighbors to the list
 
-            if len(bomb_neighbors) == 0:
+            if len(bomb_neighbors) == 0 and n > 0:
                 self.compound_clauses[literal] = create_combinations(unknown_neighbors, n)
                 # make sure containing_clauses refers to this compound clause for each unknown neighbor
                 self.add_to_containing_clauses(unknown_neighbors, literal)
@@ -162,11 +166,9 @@ class NeighborReasoningAI():
             #if there are bomb neighbors
             else:
                 non_bomb = n - len(bomb_neighbors)
-                if non_bomb < 0:
-                    raise Exception("Erroneous bomb neighbors being inferred, or score method broken")
                 #if the score of (x, y) is n, there are n bomb neighbors
                     #if n neighbors are known bombs, there is no change in the knowledge base
-                elif non_bomb >= 1:
+                if non_bomb >= 1:
                     compound_clause = create_combinations(unknown_neighbors, non_bomb)
                     for clause in compound_clause:
                         clause = clause.union(set(bomb_neighbors))
@@ -188,29 +190,3 @@ class NeighborReasoningAI():
                 if 0 < i <= self.board_length and 0 < j <= self.board_length:
                     literal = (i, j)
                     self.literal_kb[literal] = False
-
-    def run(self):
-        x, y, n = input('Please enter x, y, and the number you got out of the game [x y n]: ').split()
-        x = int(x)
-        y = int(y)
-        n = int(n)
-        self.add_to_kb(x, y, False)
-        self.infer_from_score(x, y, n)
-        print("Literal KB: ")
-        print(self.literal_kb)
-        print("Compound clauses: ")
-        print(self.compound_clauses)
-        print("Containing clauses: ")
-        print(self.containing_clauses)
-        #get move from literals
-        for literal in self.literal_kb.keys():
-            if (self.literal_kb[literal] is False) and (literal not in self.visited):
-                print("Next move: " + str(literal))
-                break
-        #if none available, just get something random:
-
-
-if __name__ == '__main__':
-    ai = NeighborReasoningAI(8)
-    while True:
-        ai.run()
